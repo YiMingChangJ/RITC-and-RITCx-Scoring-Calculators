@@ -2,8 +2,8 @@ import pandas as pd
 import numpy as np
 
 def process_trading_rankings(file_path, final_price, contract_multiplier, commission):
-    # 1. Load the data 
-    # (Change 'read_excel' to 'read_csv' if your file is actually a .csv)
+    # 1. Load the data
+    # (Change 'read_csv' to 'read_excel' if your file is actually a .xlsx)
     df = pd.read_csv(file_path)
 
     # Clean team names to be uppercase to avoid mismatching (e.g., 'uiuc' vs 'UIUC')

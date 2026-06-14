@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
+r"""
 RITC Scoring — Teams-Only, SUM per subheat (SQL-accurate) + Audit
 Fixed H/S parser to correctly read files like H1SH2.csv, H1S3.csv, "Heat 2 Sub 5.csv", etc.
 
@@ -22,7 +22,7 @@ import pandas as pd
 # -------- Config --------
 
 DEFAULT_CASE_WEIGHTS = {
-    "Energy ": 20.0,
+    "Energy": 20.0,
     "Merger Arbitrage": 20.0,
     "Algorithmic Market Making": 20.0,
     "Volatility": 20.0,

@@ -116,65 +116,65 @@ class SingleFileRankAnalyzer:
         save_path = os.path.join(directory, output_name)
 
         try:
-            writer = pd.ExcelWriter(save_path, engine="xlsxwriter")
-            workbook = writer.book
-            sheet = workbook.add_worksheet("Rankings")
+            with pd.ExcelWriter(save_path, engine="xlsxwriter") as writer:
+                workbook = writer.book
+                sheet = workbook.add_worksheet("Rankings")
 
-            # --- Formats ---
-            fmt_header_orange = workbook.add_format({'bold': True, 'bg_color': '#FCE4D6', 'border': 1}) # Traders
-            fmt_header_red = workbook.add_format({'bold': True, 'bg_color': '#F4CCCC', 'border': 1})    # Distributors
-            fmt_header_green = workbook.add_format({'bold': True, 'bg_color': '#D9EAD3', 'border': 1})  # Producers
-            fmt_header_blue = workbook.add_format({'bold': True, 'bg_color': '#C9DAF8', 'border': 1})   # Teams
-            
-            fmt_currency = workbook.add_format({'num_format': '$#,##0'})
-            fmt_bold = workbook.add_format({'bold': True})
+                # --- Formats ---
+                fmt_header_orange = workbook.add_format({'bold': True, 'bg_color': '#FCE4D6', 'border': 1}) # Traders
+                fmt_header_red = workbook.add_format({'bold': True, 'bg_color': '#F4CCCC', 'border': 1})    # Distributors
+                fmt_header_green = workbook.add_format({'bold': True, 'bg_color': '#D9EAD3', 'border': 1})  # Producers
+                fmt_header_blue = workbook.add_format({'bold': True, 'bg_color': '#C9DAF8', 'border': 1})   # Teams
 
-            # Define Layout order
-            layout = [
-                ("Top 10 Traders", fmt_header_orange),
-                ("Top 10 Distributors", fmt_header_red),
-                ("Top 10 Producers", fmt_header_green),
-                ("Top 10 Teams Overall", fmt_header_blue)
-            ]
+                fmt_currency = workbook.add_format({'num_format': '$#,##0'})
+                fmt_bold = workbook.add_format({'bold': True})
 
-            # Write tables side-by-side
-            row_start = 1
-            col_start = 1
+                # Define Layout order
+                layout = [
+                    ("Top 10 Traders", fmt_header_orange),
+                    ("Top 10 Distributors", fmt_header_red),
+                    ("Top 10 Producers", fmt_header_green),
+                    ("Top 10 Teams Overall", fmt_header_blue)
+                ]
 
-            for title, header_fmt in layout:
-                if title not in self.leaderboards: continue
-                
-                df = self.leaderboards[title]
-                if df.empty: 
-                    # Skip empty tables but move column cursor
+                # Write tables side-by-side
+                row_start = 1
+                col_start = 1
+
+                for title, header_fmt in layout:
+                    if title not in self.leaderboards:
+                        continue
+
+                    df = self.leaderboards[title]
+                    if df.empty:
+                        # Skip empty tables but move column cursor
+                        col_start += 3
+                        continue
+
+                    # 1. Title Row
+                    sheet.write(row_start, col_start, title, header_fmt)
+                    sheet.write(row_start, col_start + 1, "", header_fmt) # Merge look-alike
+
+                    # 2. Column Headers
+                    sheet.write(row_start + 1, col_start, "TraderID", fmt_bold)
+                    sheet.write(row_start + 1, col_start + 1, "NLV", fmt_bold)
+
+                    # 3. Data Rows
+                    for i, row in df.iterrows():
+                        name = row.iloc[0] # TraderID or Team Root
+                        val = row["NLV"]
+
+                        sheet.write(row_start + 2 + i, col_start, name)
+                        sheet.write(row_start + 2 + i, col_start + 1, val, fmt_currency)
+
+                    # Move cursor right for the next table (3 columns spacing)
                     col_start += 3
-                    continue
 
-                # 1. Title Row
-                sheet.write(row_start, col_start, title, header_fmt)
-                sheet.write(row_start, col_start + 1, "", header_fmt) # Merge look-alike
+                    # Simple wrap logic if needed (optional)
+                    if col_start > 12:
+                        col_start = 1
+                        row_start += 15
 
-                # 2. Column Headers
-                sheet.write(row_start + 1, col_start, "TraderID", fmt_bold)
-                sheet.write(row_start + 1, col_start + 1, "NLV", fmt_bold)
-
-                # 3. Data Rows
-                for i, row in df.iterrows():
-                    name = row.iloc[0] # TraderID or Team Root
-                    val = row["NLV"]
-                    
-                    sheet.write(row_start + 2 + i, col_start, name)
-                    sheet.write(row_start + 2 + i, col_start + 1, val, fmt_currency)
-
-                # Move cursor right for the next table (3 columns spacing)
-                col_start += 3
-                
-                # Simple wrap logic if needed (optional)
-                if col_start > 12:
-                    col_start = 1
-                    row_start += 15
-
-            writer.close()
             print(f"Successfully saved rankings to: {save_path}")
 
         except Exception as e:
